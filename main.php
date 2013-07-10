@@ -13,6 +13,7 @@ define( 'UTNAME', 'upwardsTech' );
 define( 'UTDPATH', 'upwardstech_default_path' );
 define( 'UTSAVE', 'upwardstech_save' );
 define( 'UTSET', 'upwardstech_last_data' );
+define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 
 
 	//init framework

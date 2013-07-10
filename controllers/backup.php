@@ -63,9 +63,9 @@ class UpwardsprefixBackup
         self::saveData(UTSAVE, json_encode($get_save));
 
         $phar = new PharData($path.$file_name);
-        $phar->buildFromDirectory(ABSPATH);
+        $phar->buildFromDirectory(ROOTPATH);
 
-        $result = self::showContent(ABSPATH);
+        $result = self::showContent(ROOTPATH);
         self::saveData(UTSET, json_encode($result), ' ', 'no');
 
         $upwards->redirect(array('function'=>'setting'));
@@ -78,7 +78,7 @@ class UpwardsprefixBackup
     public function checkingChangeFile()
     {
         global $upwards;
-        $new_data = self::showContent(ABSPATH);
+        $new_data = self::showContent(ROOTPATH);
         $last_update = @json_decode(get_option(UTSET));
 
         $result = self::checkingChangeArray($last_update, $new_data);
@@ -251,7 +251,7 @@ class UpwardsprefixBackup
     private function setNewDefaultPath()
     {
         $randChar = substr(md5(time()), 0, 10);
-        $defaultPath = ABSPATH.'wp-content/backupUpwardsTech-'.$randChar.'/';
+        $defaultPath = ROOTPATH.'wp-content/backupUpwardsTech-'.$randChar.'/';
         self::saveData(UTDPATH, $defaultPath, '', 'no');
 
         return $defaultPath;
