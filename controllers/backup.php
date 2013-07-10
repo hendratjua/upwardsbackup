@@ -7,7 +7,8 @@ class UpwardsprefixBackup
     public function __construct()
     {
         $this->path = self::getDefaultPath();
-        if (!mkdir($this->path, 0755));
+        if(is_dir($this->path) == false)
+            mkdir($this->path, 0755);
     }
 	/*
 	 * Handler for  FramePress menu link
