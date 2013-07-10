@@ -2,7 +2,13 @@
 
 class UpwardsprefixBackup
 {
+    private $path;
 
+    public function __construct()
+    {
+        $this->path = self::getDefaultPath();
+        if (!mkdir($this->path, 0755));
+    }
 	/*
 	 * Handler for  FramePress menu link
 	 *
@@ -14,10 +20,9 @@ class UpwardsprefixBackup
         global $upwards;
 
         $results = @json_decode(get_option(UTSAVE));
-        $path = self::getDefaultPath();
 
         $upwards->viewSet('list_files', $results);
-        $upwards->viewSet('path', $path);
+        $upwards->viewSet('path', $this->path);
 
 	}
 
@@ -28,9 +33,6 @@ class UpwardsprefixBackup
     public function backupAllData()
     {
         global $upwards;
-
-        $path = self::getDefaultPath();
-        if (!mkdir($path, 0, true));
 
         $file_name = UTNAME.date(" M d, Y H-i-s").'.zip';
 
@@ -62,7 +64,7 @@ class UpwardsprefixBackup
 
         self::saveData(UTSAVE, json_encode($get_save));
 
-        $phar = new PharData($path.$file_name);
+        $phar = new PharData($this->path.$file_name);
         $phar->buildFromDirectory(ROOTPATH);
 
         $result = self::showContent(ROOTPATH);
@@ -94,14 +96,13 @@ class UpwardsprefixBackup
     {
         global $upwards;
 
-        $path = self::getDefaultPath();
         $results = @json_decode(get_option(UTSAVE));
         $temp = array();
         foreach($results as $result)
         {
             if($result->filename == $_REQUEST['name'])
             {
-                $file = $path.$result->filename;
+                $file = $this->path.$result->filename;
                 if(file_exists($file)) unlink($file);
             }
             else
@@ -125,8 +126,6 @@ class UpwardsprefixBackup
 
         if(!empty($new_file))
         {
-            $path = self::getDefaultPath();
-            if (!mkdir($path, 0, true));
 
             $file_name = UTNAME.date(" M d, Y H-i-s").'.zip';
 
@@ -157,7 +156,7 @@ class UpwardsprefixBackup
             }
             self::saveData(UTSAVE, json_encode($get_save));
 
-            $phar = new PharData($path.$file_name);
+            $phar = new PharData($this->path.$file_name);
             foreach($new_file as $file)
             {
                 $file_location = $file['parent'].DS.$file['name'];
