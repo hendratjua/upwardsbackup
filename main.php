@@ -83,6 +83,11 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 			'controller' => 'backup',
 			'function' => 'filterChangeFile',
 		),
+		array(
+			'tag' => 'init',
+			'controller' => 'backup',
+			'function' => 'writeTime',
+		)
 	);
 	$upwards->actions($my_actions);
 

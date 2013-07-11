@@ -22,11 +22,33 @@ class UpwardsprefixBackup
 
         $results = @json_decode(get_option(UTSAVE));
 
+        $temp = wp_get_schedules();
+        var_dump($temp);
+
+        //self::writeTime();
+
         $upwards->viewSet('list_files', $results);
         $upwards->viewSet('path', $this->path);
 
 	}
 
+    public function test()
+    {
+        $timestamp = time();
+        $recurrence = 60*5;
+        wp_schedule_event($timestamp, $recurrence, 'writeTime');
+        die();
+    }
+
+
+    public function writeTime()
+    {
+        $file = $this->path.'test_schedule.txt';
+        $handle = fopen($file, 'a+');
+        $data = date('d-m-Y h:i:s').PHP_EOL;
+        fwrite($handle, $data);
+        fclose($handle);
+    }
 
     /**
      * Backup all data
