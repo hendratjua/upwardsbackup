@@ -1,65 +1,51 @@
 <?php
 
-class UpwardsprefixBackup
+class UpwardsbackupsMain
 {
     private $path;
 
     public function __construct()
     {
-        $this->path = self::getDefaultPath();
-        if(is_dir($this->path) == false)
-            mkdir($this->path, 0755);
+        $setFolder = get_option( UTDPATH );
+        if(is_dir($setFolder) == false)
+            mkdir($setFolder, 0755);
     }
+
+
 	/*
 	 * Handler for  FramePress menu link
 	 *
 	 * Cause this is a page, this function will render
 	 * its view automatically before the function finish
 	*/
-	public function setting ()
+	public function home()
 	{
-        global $upwards;
+        global $upwardsbackup;
 
         $results = @json_decode(get_option(UTSAVE));
+        $path = get_option(UTDPATH);
 
-        $temp = wp_get_schedules();
-        var_dump($temp);
-
-        //self::writeTime();
-
-        $upwards->viewSet('list_files', $results);
-        $upwards->viewSet('path', $this->path);
+        $upwardsbackup->viewSet('list_files', $results);
+        $upwardsbackup->viewSet('path', $path);
 
 	}
 
-    public function test()
-    {
-        $timestamp = time();
-        $recurrence = 60*5;
-        wp_schedule_event($timestamp, $recurrence, 'writeTime');
-        die();
-    }
-
-
-    public function writeTime()
-    {
-        $file = $this->path.'test_schedule.txt';
-        $handle = fopen($file, 'a+');
-        $data = date('d-m-Y h:i:s').PHP_EOL;
-        fwrite($handle, $data);
-        fclose($handle);
-    }
 
     /**
      * Backup all data
      */
     public function backupAllData()
     {
-        global $upwards;
+        global $upwardsbackup;
 
         $file_name = UTNAME.date(" M d, Y H-i-s").'.zip';
 
         $get_save = @json_decode(get_option(UTSAVE));
+        $path = get_option(UTDPATH);
+
+        $upwardsbackup->import('HelperUpwardsBackup.php');
+        $helperUpwardsBackup = new HelperUpwardsBackup();
+        $getAllInformationFile = $helperUpwardsBackup->getFileContent(ROOTPATH, null);
 
         $i=0;
         if(isset($get_save))
@@ -85,17 +71,62 @@ class UpwardsprefixBackup
             $get_save = $data_backup;
         }
 
-        self::saveData(UTSAVE, json_encode($get_save));
+        update_option( UTSAVE, json_encode($get_save) );
 
-        $phar = new PharData($this->path.$file_name);
+        $phar = new PharData($path.$file_name);
         $phar->buildFromDirectory(ROOTPATH);
 
-        $result = self::showContent(ROOTPATH);
-        self::saveData(UTSET, json_encode($result), ' ', 'no');
+        update_option( UTSAVE, json_encode($get_save) );
+        update_option( UTSET, json_encode($getAllInformationFile) );
 
-        $upwards->redirect(array('function'=>'setting'));
+        $upwardsbackup->redirect(array('function'=>'setting'));
 
     }
+
+
+
+
+
+    /**
+     * Handler for the action defined in FramePress
+     * main file (main.php)
+     *
+     * Cause this is an action, this function will render
+     * its view only if requested
+     */
+    function filter()
+    {
+
+    }
+
+
+
+
+
+
+
+    public function test()
+    {
+        $timestamp = time();
+        $recurrence = 60*5;
+        //wp_schedule_event($timestamp, $recurrence, 'writeTime');
+        die();
+    }
+
+
+    public function writeThis()
+    {
+        $path = get_option(UTDPATH);
+        var_dump($path);
+        $file = $path.'test_schedule.txt';
+        $handle = fopen($file, 'a+');
+        $data = date('d-m-Y h:i:s').PHP_EOL;
+        fwrite($handle, $data);
+        fclose($handle);
+
+        return true;
+    }
+
 
     /**
      * checking change file and tar it

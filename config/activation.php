@@ -15,67 +15,58 @@
  */
 
 
-function upwardsprefix_on_activation ()
+function Upwardsbackups_on_activation ()
 {
-	//Your activation code here
+    global $upwardsbackup;
 
-    $getUpdatePath = self::setFolder();
-
-    add_option( UTSET, null );
-    add_option( UTDPATH, $getUpdatePath );
-    add_option( UTSAVE, null );
-
-
+	//Create folder for backup file
     $randChar = substr(md5(time()), 0, 10);
-    $defaultPath = ROOTPATH.'wp-content/backupUpwardsTech-'.$randChar.'/';
-    self::saveData(UTDPATH, self::setFolder(), '', 'no');
+    $setFolder = ROOTPATH.'/wp-content/backupUpwardsTech-'.$randChar.'/';
+    if(is_dir($setFolder) == false)
+        mkdir($setFolder, 0755);
+
+    //Save path folder to database
+    update_option( UTDPATH, $setFolder );
 
 
-    $options_names = array(
-        UTSAVE,
-        UTSET,
-        UTDPATH
-    );
+    //Get all data from folder and file from root
+    $upwardsbackup->import('HelperUpwardsBackup.php');
+    $helperUpwardsBackup = new HelperUpwardsBackup();
+    $getAllInformationFile = $helperUpwardsBackup->getFileContent(ROOTPATH, null);
+    update_option( UTSET, json_encode($getAllInformationFile) );
 
-    if ( get_option( UTSAVE ) != false )
-        update_option( UTSAVE, null );
-    else
-        add_option( UTSAVE, null );
 
-    if ( get_option( UTSET ) != false )
-        update_option( UTSET, null );
-    else
-        add_option( UTSET, null );
-
-    $this->path = self::getDefaultPath();
-    if(is_dir($this->path) == false)
-        mkdir($this->path, 0755);
-
-    if ( !wp_next_scheduled( 'writeTime' ) )
-        wp_schedule_event( time() , 'daily', 'writeTime');
-
+    //Reset all save data to null
+    update_option( UTSAVE, null );
 }
 
-function upwardsprefix_on_deactivation ()
+function Upwardsbackups_on_deactivation ()
 {
-	//your deactivation code here
+    //Delete all file backup and folder
+    $results = @json_decode(get_option(UTSAVE));
+    $path = get_option(UTDPATH);
+    foreach($results as $result)
+    {
+        $file = $path.$result->filename;
+        //Delete all file backup
+        if(file_exists($file))
+            unlink($file);
+    }
+
+    //Delete folder
+    if(is_dir($path))
+        rmdir($path);
+
+    //Delete all database from wordpress
     delete_option(UTSAVE);
     delete_option(UTSET);
     delete_option(UTDPATH);
 
-    wp_clear_scheduled_hook('writeTime');
-}
 
+    //Clear all the schedule
+    wp_clear_scheduled_hook('upwardsbackups.writeThis');
+    wp_clear_scheduled_hook('upwardsbackups.write');
 
-private function setFolder()
-{
-    $randChar = substr(md5(time()), 0, 10);
-    $setFolder = ROOTPATH.'wp-content/backupUpwardsTech-'.$randChar.'/';
-
-    if(is_dir($setFolder) == false)
-        mkdir($setFolder, 0755);
-
-    return $setFolder;
 }
 
 ?>

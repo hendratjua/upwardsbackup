@@ -1,8 +1,8 @@
-<?php
+<?php var_dump(wp_get_schedules()); ?><?php
 $download_link = get_option('siteurl').substr($path, -41);
-$link1 = $this->router(array('controller'=>'backup', 'function'=>'backupAllData'));
-$link2 = $this->router(array('controller'=>'backup', 'function'=>'checkingChangeFile'));
-$link3 = $this->router(array('controller'=>'backup', 'function'=>'deleteBackup'));
+$link1 = $this->router(array('controller'=>'main', 'function'=>'backupAllData'));
+$link2 = $this->router(array('controller'=>'main', 'function'=>'checkingChangeFile'));
+$link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
 ?>
 <div class="wrap">
     <div class="icon32" id="icon-generic">

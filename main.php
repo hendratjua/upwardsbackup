@@ -25,9 +25,9 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 *	see "Creating and configuring your instance of framepress" documentation
 * 	--------------------------------------------------------------------------------------------------------------------
 */
-	global $upwards;
-    $upwards = new $FramePress(__FILE__, array(
-		'prefix' => 'upwardsprefix',
+	global $upwardsbackup;
+    $upwardsbackup = new $FramePress(__FILE__, array(
+		'prefix' => 'upwardsbackups',
 	));
 
 
@@ -59,13 +59,13 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 				'page.title' => 'Upwards Technologies Backup',
 				'menu.title' => 'Upwards Backup',
 				'capability' => 'administrator',
-				'controller' => 'backup',
-				'function' => 'setting',
+				'controller' => 'main',
+				'function' => 'home',
 				'icon' => '',
 			)
 		)
 	);
-	$upwards->pages($my_pages);
+	$upwardsbackup->pages($my_pages);
 
 
 
@@ -80,16 +80,15 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 	$my_actions = array (
 		array(
 			'tag' => 'init',
-			'controller' => 'backup',
-			'function' => 'filterChangeFile',
-		),
-		array(
-			'tag' => 'init',
-			'controller' => 'backup',
-			'function' => 'writeTime',
-		)
+			'controller' => 'main',
+			'function' => 'filter',
+		),array(
+            'tag' => 'upwardsbackups.writeThis',
+            'controller' => 'main',
+            'function' => 'writeThis',
+        )
 	);
-	$upwards->actions($my_actions);
+	$upwardsbackup->actions($my_actions);
 
 
 /**
@@ -107,7 +106,22 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 		),
 
 	);
-	$upwards->shortcodes($my_shortcodes);
+	$upwardsbackup->shortcodes($my_shortcodes);
 */
+
+add_filter( 'cron_schedules', 'cron_add_ten_second' );
+
+function cron_add_ten_second( $schedules ) {
+    // Adds once weekly to the existing schedules.
+    $schedules['tenSecond'] = array(
+        'interval' => 10,
+        'display' => __( '10 Second' )
+    );
+    return $schedules;
+}
+
+if (!wp_next_scheduled('upwardsbackups.writeThis')){
+    wp_schedule_event(strtotime('now'), 'tenSecond', 'upwardsbackups.writeThis');
+}
 
 ?>
