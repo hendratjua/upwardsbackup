@@ -78,14 +78,10 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 
 	//action/filters
 	$my_actions = array (
-		array(
-			'tag' => 'init',
-			'controller' => 'main',
-			'function' => 'filter',
-		),array(
-            'tag' => 'upwardsbackups.writeThis',
+        array(
+            'tag' => 'upwardsbackups.checkingChangeFile',
             'controller' => 'main',
-            'function' => 'writeThis',
+            'function' => 'checkingChangeFile',
         )
 	);
 	$upwardsbackup->actions($my_actions);
@@ -109,19 +105,8 @@ define( 'ROOTPATH', str_replace('/wp-content/themes', '', get_theme_root()) );
 	$upwardsbackup->shortcodes($my_shortcodes);
 */
 
-add_filter( 'cron_schedules', 'cron_add_ten_second' );
-
-function cron_add_ten_second( $schedules ) {
-    // Adds once weekly to the existing schedules.
-    $schedules['tenSecond'] = array(
-        'interval' => 10,
-        'display' => __( '10 Second' )
-    );
-    return $schedules;
-}
-
-if (!wp_next_scheduled('upwardsbackups.writeThis')){
-    wp_schedule_event(strtotime('now'), 'tenSecond', 'upwardsbackups.writeThis');
+if (!wp_next_scheduled('upwardsbackups.checkingChangeFile')){
+    wp_schedule_event(strtotime('now'), 'daily', 'upwardsbackups.checkingChangeFile');
 }
 
 ?>
