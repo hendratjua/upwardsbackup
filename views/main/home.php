@@ -1,25 +1,9 @@
 <?php
 $download_link = get_option('siteurl').substr($path, -41);
 $link1 = $this->router(array('controller'=>'main', 'function'=>'backupAllData'));
-$link2 = $this->router(array('controller'=>'main', 'function'=>'checkingChangeFile'));
+$link2 = $this->router(array('controller'=>'main', 'function'=>'checkingChangeFileAu'));
 $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
 ?>
-<div class="wrap">
-    <div class="icon32" id="icon-generic">
-        <br/>
-    </div>
-    <h2>Upwards Technologies Backup</h2>
-
-    <div>
-        <ul class="subsubsub">
-            <li>
-                <a href="<?php echo $link1; ?>">Back up All data</a>
-                |
-            </li>
-            <li>
-                <a href="<?php echo $link2; ?>">Check Change File</a>
-            </li>
-        </ul>
 
         <table class="widefat">
             <thead>
@@ -115,5 +99,3 @@ $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
             </tbody>
         </table>
 
-    </div>
-</div>

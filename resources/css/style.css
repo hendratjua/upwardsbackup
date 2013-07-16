@@ -1,0 +1,8 @@
+#setting-Email th, #setting-Email td
+{
+    padding: 10px;
+}
+
+#setting-Email input[type="text"], #setting-Email input[type="email"] {
+    width: 100%;
+}
