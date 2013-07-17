@@ -305,7 +305,8 @@ class UpwardsbackupsMain
     {
         global $upwardsbackup, $FramePressEmail;
 
-        $this->layout = '';
+        //Disable layout
+        $upwardsbackup->status['view.layout.file'] = '';
 
         $get_UpwardsSave = @json_decode(get_option(UTSAVE));
         $configEmail = $get_UpwardsSave->config_email ? $get_UpwardsSave->config_email : null;
