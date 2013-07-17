@@ -39,7 +39,6 @@ class UpwardsbackupsMain
         if($_POST)
         {
 
-
             $configEmailTemp = array();
             $configEmailTemp['enable'] = isset($_POST['enable']) ? mysql_real_escape_string($_POST['enable']) : 0;
             $configEmailTemp['from']['email'] = $_POST['form_email'] != null ? mysql_real_escape_string($_POST['form_email']) : 'upwardsbackup@wordpress.org';
@@ -49,6 +48,8 @@ class UpwardsbackupsMain
             $get_UpwardsSave = @json_decode(get_option(UTSAVE));
             $get_UpwardsSave->config_email = $configEmailTemp;
             update_option( UTSAVE, json_encode($get_UpwardsSave) );
+
+            $upwardsbackup->viewSet('msg', "Successful update Email Setting");
 
         }
 
@@ -77,7 +78,7 @@ class UpwardsbackupsMain
         $helperUpwardsBackup = new HelperUpwardsBackup();
         $getAllInformationFile = $helperUpwardsBackup->getFileContent(ROOTPATH, null);
 
-        $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name);
+        $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name, 'All Data');
 
         $phar = new PharData($path.$file_name);
         $phar->buildFromDirectory(ROOTPATH);
@@ -95,9 +96,13 @@ class UpwardsbackupsMain
     {
         global $upwardsbackup;
 
-        self::checkChangeFile();
+        $result = self::checkChangeFile();
+        if($result)
+            $params = '&msg=Successful do backup manually';
+        else
+            $params = '&msg=There have been no changes found';
 
-        $upwardsbackup->redirect(array('function'=>'home'));
+        $upwardsbackup->redirect(array('function'=>'home', 'params' => $params));
 
     }
 
@@ -157,13 +162,20 @@ class UpwardsbackupsMain
         //Get all data from folder and file from root
         $upwardsbackup->import('HelperUpwardsBackup.php');
         $helperUpwardsBackup = new HelperUpwardsBackup();
-        $new_data = $helperUpwardsBackup->getFileContent(ROOTPATH, null);
 
+        $new_data = $helperUpwardsBackup->getFileContent(ROOTPATH, null);
         $last_update = @json_decode(get_option(UTSET));
+
         $result = self::checkingChangeArray($last_update, $new_data);
+
         self::backupData($result);
 
         update_option( UTSET, json_encode($new_data) );
+
+        if(empty($result))
+            return 0;
+        else
+            return 1;
     }
 
 
@@ -217,10 +229,24 @@ class UpwardsbackupsMain
     /**
      * Backup all change data
      */
-    private function backupData($new_file = array())
+    private function backupData($new_files = array())
     {
-        if(!empty($new_file))
+        if(!empty($new_files))
         {
+            $change_log = '';
+            $first = true;
+            foreach($new_files as $file)
+            {
+                if($first)
+                {
+                    $first = false;
+                    $change_log .= $file['path'];
+                }
+                else
+                {
+                    $change_log .= '<br/>'.$file['path'];
+                }
+            }
 
             $file_name = UTNAME.date(" M d, Y H-i-s").'.zip';
 
@@ -228,11 +254,12 @@ class UpwardsbackupsMain
             $get_save = $get_UpwardsSave->data_save;
             $path = get_option(UTDPATH);
 
-            $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name);
-            update_option( UTSAVE, json_encode($get_save) );
+            $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name, $change_log);
+
+            update_option( UTSAVE, json_encode($get_UpwardsSave) );
 
             $phar = new PharData($path.$file_name);
-            foreach($new_file as $file)
+            foreach($new_files as $file)
             {
                 $file_location = $file['parent'].DS.$file['name'];
                 $phar->addFile($file['path'], $file_location);
@@ -246,7 +273,7 @@ class UpwardsbackupsMain
     }
 
 
-    private function update_save_data($get_save, $file_name)
+    private function update_save_data($get_save, $file_name, $change_log)
     {
         $i=0;
         if(isset($get_save))
@@ -261,14 +288,14 @@ class UpwardsbackupsMain
             }
             $data_backup[$i]['filename'] = $file_name;
             $data_backup[$i]['date'] = date("M d, Y H:i:s");
-            $data_backup[$i]['data'] = "All Data";
+            $data_backup[$i]['data'] = $change_log;
             $get_save = $data_backup;
         }
         else
         {
             $data_backup[$i]['filename'] = $file_name;
             $data_backup[$i]['date'] = date("M d, Y H:i:s");
-            $data_backup[$i]['data'] = "All Data";
+            $data_backup[$i]['data'] = $change_log;
             $get_save = $data_backup;
         }
 
