@@ -2,8 +2,6 @@
 
 class UpwardsbackupsMain
 {
-    private $path;
-
     public $layout = 'layout';
 
     public function __construct()
@@ -307,6 +305,7 @@ class UpwardsbackupsMain
     {
         global $upwardsbackup, $FramePressEmail;
 
+        $this->layout = '';
 
         $get_UpwardsSave = @json_decode(get_option(UTSAVE));
         $configEmail = $get_UpwardsSave->config_email ? $get_UpwardsSave->config_email : null;
