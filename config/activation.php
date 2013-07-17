@@ -54,7 +54,7 @@ function Upwardsbackups_on_activation ()
     }
 
     $configEmail = array();
-    $configEmail['enable'] = 0;
+    $configEmail['enable'] = 1;
     $configEmail['from']['email'] = $form_email;
     $configEmail['subject'] = "UpwardsBackup Notification Changed";
     $configEmail['to'] = get_option('admin_email');
