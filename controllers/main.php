@@ -324,8 +324,6 @@ class UpwardsbackupsMain
 
         }
 
-        $upwardsbackup->redirect(array('function'=>'home'));
-
     }
 
 
