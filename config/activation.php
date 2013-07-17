@@ -36,14 +36,25 @@ function Upwardsbackups_on_activation ()
     update_option( UTSET, json_encode($getAllInformationFile) );
 
 
-    //Reset all save data to null
-    update_option( UTSAVE, null );
+    //Set all save data to null
+    //Setting Email
+    $configEmail = array();
+    $configEmail['enable'] = 0;
+    $configEmail['from']['email'] = 'upwardsbackup@wordpress.org';
+    $configEmail['subject'] = "UpwardsBackup Notification Changed";
+    $configEmail['to'] = get_option('admin_email');
+
+    $get_UpwardsSave = array();
+    $get_UpwardsSave['config_email'] = $configEmail;
+    update_option( UTSAVE, json_encode($get_UpwardsSave) );
+
 }
 
 function Upwardsbackups_on_deactivation ()
 {
     //Delete all file backup and folder
-    $results = @json_decode(get_option(UTSAVE));
+    $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+    $results = $get_UpwardsSave->data_save;
     $path = get_option(UTDPATH);
     foreach($results as $result)
     {

@@ -4,6 +4,7 @@
 <body>
 
 <h1>Hello Admin,</h1>
+<p>Some changes has been made into your site</p>
 <p>
 
     <?php if(!empty($data)): ?>

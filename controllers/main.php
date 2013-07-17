@@ -276,7 +276,7 @@ class UpwardsbackupsMain
     }
 
 
-    public function sendMail()
+    private function sendMail()
     {
         global $upwardsbackup, $FramePressEmail;
 
