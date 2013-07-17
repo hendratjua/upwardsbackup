@@ -19,7 +19,7 @@ $link_email = $this->router(array('controller'=>'main', 'function'=>'emailSettin
             |
         </li>
         <li>
-            <a href="<?php echo $link_email; ?>">Setting Email</a>
+            <a href="<?php echo $link_email; ?>">Email Setting</a>
         </li>
     </ul>
     <div class="clear"></div>
