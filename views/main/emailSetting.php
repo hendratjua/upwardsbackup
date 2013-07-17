@@ -32,7 +32,7 @@ $form_name = $config_email->from->name;
                 </label>
             </td>
             <td>
-                <input type="email" class="full-width" value="<?php echo $to; ?>" name="to" id="to">
+                <input type="text" class="full-width" value="<?php echo $to; ?>" name="to" id="to">
             </td>
         </tr>
         <tr>
