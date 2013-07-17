@@ -1,10 +1,13 @@
+<?php
+$sitename = get_option('blogname');
+?>
 <!DOCTYPE html>
 <html>
 <head></head>
 <body>
 
 <h1>Hello Admin,</h1>
-<p>Some changes has been made into your site</p>
+<p>Some changes has been made into your site <?php echo $sitename ?></p>
 <p>
 
     <?php if(!empty($data)): ?>

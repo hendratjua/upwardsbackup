@@ -38,9 +38,24 @@ function Upwardsbackups_on_activation ()
 
     //Set all save data to null
     //Setting Email
+
+    $validate = array(
+        'http://',
+        'https://',
+        'http://www.',
+        'https://www.',
+        'www.'
+    );
+
+    $form_email = 'upwardsbackup@'.str_replace($validate, '', get_option('siteurl'));
+    if(filter_var($form_email, FILTER_VALIDATE_EMAIL) == false)
+    {
+        $form_email = 'upwardsbackup@wordpress.org';
+    }
+
     $configEmail = array();
     $configEmail['enable'] = 0;
-    $configEmail['from']['email'] = 'upwardsbackup@wordpress.org';
+    $configEmail['from']['email'] = $form_email;
     $configEmail['subject'] = "UpwardsBackup Notification Changed";
     $configEmail['to'] = get_option('admin_email');
 

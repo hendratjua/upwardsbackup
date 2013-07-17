@@ -314,21 +314,7 @@ class UpwardsbackupsMain
         $enable_email = isset($configEmail->enable) ? $configEmail->enable : 0;
         if($enable_email == 1)
         {
-            $validate = array(
-                'http://',
-                'https://',
-                'http://www.',
-                'https://www.',
-                'www.'
-            );
-
-            $form_email = 'upwardsbackup@'.str_replace($validate, '', get_option('siteurl'));
-            if(filter_var($form_email, FILTER_VALIDATE_EMAIL) == false)
-            {
-                $form_email = 'upwardsbackup@wordpress.org';
-            }
-
-            $form_email = isset($configEmail->from->email) ? $configEmail->from->email : $form_email;
+            $form_email = isset($configEmail->from->email) ? $configEmail->from->email : "upwardsbackup@wordpress.org";
             $subject    = isset($configEmail->subject) ? $configEmail->subject : "UpwardsBackup Notification Changed";
             $to         = isset($configEmail->to) ? $configEmail->to : get_option('admin_email');
 
