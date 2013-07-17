@@ -10,7 +10,7 @@ $form_name = $config_email->from->name;
     <table class="wpcf-types-form-table widefat" id="setting-Email">
         <thead>
         <tr>
-            <th colspan="2">Setting Email</th>
+            <th colspan="2">Email Setting</th>
         </tr>
         </thead>
         <tbody>
