@@ -140,8 +140,12 @@ class UpwardsbackupsMain
 
     public function checkingChangeFile()
     {
-        self::checkChangeFile();
-        self::sendMail();
+        $result = self::checkChangeFile();
+        if($result)
+        {
+            self::sendMail();
+        }
+
         return true;
 
     }
