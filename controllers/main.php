@@ -59,6 +59,43 @@ class UpwardsbackupsMain
     }
 
 
+    public function cdnSetting()
+    {
+        global $upwardsbackup;
+
+        if($_POST)
+        {
+
+            $configCdnTemp = array();
+            $configCdnTemp['enable'] = isset($_POST['enable']) ? mysql_real_escape_string($_POST['enable']) : 0;
+            $configCdnTemp['access_key_id'] = $_POST['access_key_id'] != null ? mysql_real_escape_string($_POST['access_key_id']) : null;
+            $configCdnTemp['secret_access_key'] = $_POST['secret_access_key'] != null ? mysql_real_escape_string($_POST['secret_access_key']) : null;
+
+            $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+            $get_UpwardsSave->config_cdn = $configCdnTemp;
+            update_option( UTSAVE, json_encode($get_UpwardsSave) );
+
+            $upwardsbackup->viewSet('msg', "Successful update CDN Setting");
+
+        }
+
+        $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+        $config_cdn = isset($get_UpwardsSave->config_cdn) ? $get_UpwardsSave->config_cdn : null;
+
+        $upwardsbackup->viewSet('config_cdn', $config_cdn);
+
+        $upwardsbackup->import('lib.s3.php');
+        $s3 = new TanTanS3($config_cdn->access_key_id, $config_cdn->secret_access_key);
+        if (!($buckets = $s3->listBuckets())) {
+            $error = $this->getErrorMessage($s3->parsed_xml, $s3->responseCode);
+            var_dump($error);
+        }
+
+        var_dump($buckets);
+        die();
+    }
+
+
     /**
      * Backup all data
      */
@@ -78,8 +115,16 @@ class UpwardsbackupsMain
 
         $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name, 'All Data');
 
-        $phar = new PharData($path.$file_name);
-        $phar->buildFromDirectory(ROOTPATH);
+        $config_cdn = $get_UpwardsSave->config_cdn;
+        if($config_cdn->enable == 1)
+        {
+
+        }
+        else
+        {
+            $phar = new PharData($path.$file_name);
+            $phar->buildFromDirectory(ROOTPATH);
+        }
 
         update_option( UTSAVE, json_encode($get_UpwardsSave) );
         update_option( UTSET, json_encode($getAllInformationFile) );
@@ -233,6 +278,8 @@ class UpwardsbackupsMain
      */
     private function backupData($new_files = array())
     {
+        global $upwardsbackup;
+
         if(!empty($new_files))
         {
             $change_log = '';
@@ -260,11 +307,24 @@ class UpwardsbackupsMain
 
             update_option( UTSAVE, json_encode($get_UpwardsSave) );
 
-            $phar = new PharData($path.$file_name);
-            foreach($new_files as $file)
+            $config_cdn = $get_UpwardsSave->config_cdn;
+
+            if($config_cdn->enable == 1)
             {
-                $file_location = $file['parent'].DS.$file['name'];
-                $phar->addFile($file['path'], $file_location);
+                $upwardsbackup->import('lib.s3.php');
+                $s3 = new TanTanS3($config_cdn->access_key_id, $config_cdn->secret_access_key);
+                if (!($buckets = $s3->listBuckets())) {
+                    $error = $this->getErrorMessage($s3->parsed_xml, $s3->responseCode);
+                }
+            }
+            else
+            {
+                $phar = new PharData($path.$file_name);
+                foreach($new_files as $file)
+                {
+                    $file_location = $file['parent'].DS.$file['name'];
+                    $phar->addFile($file['path'], $file_location);
+                }
             }
 
             return 1;

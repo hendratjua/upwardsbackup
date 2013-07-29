@@ -59,8 +59,14 @@ function Upwardsbackups_on_activation ()
     $configEmail['subject'] = "UpwardsBackup Notification Changed";
     $configEmail['to'] = get_option('admin_email');
 
+    $configCdn = array();
+    $configCdn['enable'] = 0;
+    $configCdn['access_key_id'] = null;
+    $configCdn['secret_access_key'] = null;
+
     $get_UpwardsSave = array();
     $get_UpwardsSave['config_email'] = $configEmail;
+    $get_UpwardsSave['config_cdn'] = $configCdn;
     update_option( UTSAVE, json_encode($get_UpwardsSave) );
 
 }

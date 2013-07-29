@@ -2,6 +2,7 @@
 $link_backup = $this->router(array('controller'=>'main', 'function'=>'home'));
 $link_backup_manual = $this->router(array('controller'=>'main', 'function'=>'checkingChangeFileAu'));
 $link_email = $this->router(array('controller'=>'main', 'function'=>'emailSetting'));
+$link_cdn = $this->router(array('controller'=>'main', 'function'=>'cdnSetting'));
 ?>
 <?php echo $this->css("framepress.default.css"); ?>
 <?php echo $this->css("style.css"); ?>
@@ -20,6 +21,10 @@ $link_email = $this->router(array('controller'=>'main', 'function'=>'emailSettin
         </li>
         <li>
             <a href="<?php echo $link_email; ?>">Email Setting</a>
+            |
+        </li>
+        <li>
+            <a href="<?php echo $link_cdn; ?>">CDN Setting</a>
         </li>
     </ul>
     <div class="clear"></div>
