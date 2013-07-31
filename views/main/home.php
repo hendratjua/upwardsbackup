@@ -3,6 +3,7 @@ $download_link = get_option('siteurl').substr($path, -41);
 $link1 = $this->router(array('controller'=>'main', 'function'=>'backupAllData'));
 $link2 = $this->router(array('controller'=>'main', 'function'=>'checkingChangeFileAu'));
 $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
+$link4 = $this->router(array('controller'=>'main', 'function'=>'manualBackupAllDataToCDN'));
 ?>
 
         <table class="widefat">
@@ -22,6 +23,7 @@ $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
 
                     <?php
                     $filename = $list->filename;
+                    $raw_filename = rawurlencode($filename);
                     $download = $download_link.rawurlencode($filename);
 
                     $type = filesize($path.$filename);
@@ -73,6 +75,8 @@ $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
                             $data = 'Cannot found any detail';
                     }
 
+                    $linkCdn = $this->router(array('controller'=>'main', 'function'=>'manualBackupToCDN', 'params'=>'&filename='.$raw_filename));
+
                     ?>
 
                 <tr>
@@ -82,6 +86,9 @@ $link3 = $this->router(array('controller'=>'main', 'function'=>'deleteBackup'));
                     <td><?php echo $data; ?></td>
                     <td>
                         <a href="<?php echo $download; ?>">Download</a>
+                        |
+                        <a href="<?php echo $linkCdn; ?>">Backup to CDN</a>
+                        |
                         <a href="<?php echo $link3.'&name='.$filename; ?>">Deleted</a>
                     </td>
                 </tr>

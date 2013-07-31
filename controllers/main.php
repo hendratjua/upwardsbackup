@@ -84,15 +84,55 @@ class UpwardsbackupsMain
 
         $upwardsbackup->viewSet('config_cdn', $config_cdn);
 
-        $upwardsbackup->import('lib.s3.php');
-        $s3 = new TanTanS3($config_cdn->access_key_id, $config_cdn->secret_access_key);
-        if (!($buckets = $s3->listBuckets())) {
-            $error = $this->getErrorMessage($s3->parsed_xml, $s3->responseCode);
-            var_dump($error);
+
+        $upwardsbackup->import('S3.php');
+        if($config_cdn->access_key_id != null AND $config_cdn->secret_access_key != null)
+        {
+            $s3 = new S3($config_cdn->access_key_id, $config_cdn->secret_access_key);
+            if (!($buckets = $s3->listBuckets())) {
+                $upwardsbackup->viewSet('error', "Access to cdn is failed.");
+            }
         }
 
-        var_dump($buckets);
-        die();
+    }
+
+
+    public function manualBackupToCDN()
+    {
+        global $upwardsbackup;
+
+        $params = '&error=There no file has been found';
+
+        if($_GET['filename'])
+        {
+            $filename = $_GET['filename'];
+            $result = self::backupCdn($filename);
+            if($result)
+                $params = '&msg=Success send to CDN';
+        }
+
+        $upwardsbackup->redirect(array('function'=>'home', 'params' => $params));
+    }
+
+
+    public function manualBackupAllDataToCDN()
+    {
+        global $upwardsbackup;
+
+        $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+        $config_cdn = $get_UpwardsSave->config_cdn;
+
+        if($config_cdn->enable == 1)
+        {
+            self::backupAllDataToCdn();
+            $params = '&msg=Success send all file to CDN';
+        }
+        else
+        {
+            $params = '&error=CDN setting is not enable';
+        }
+
+        $upwardsbackup->redirect(array('function'=>'home', 'params' => $params));
     }
 
 
@@ -115,15 +155,14 @@ class UpwardsbackupsMain
 
         $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name, 'All Data');
 
+        $phar = new PharData($path.$file_name);
+        $phar->buildFromDirectory(ROOTPATH);
+
         $config_cdn = $get_UpwardsSave->config_cdn;
+
         if($config_cdn->enable == 1)
         {
-
-        }
-        else
-        {
-            $phar = new PharData($path.$file_name);
-            $phar->buildFromDirectory(ROOTPATH);
+            self::backupAllDataToCdn();
         }
 
         update_option( UTSAVE, json_encode($get_UpwardsSave) );
@@ -132,7 +171,6 @@ class UpwardsbackupsMain
         $upwardsbackup->redirect(array('function'=>'home'));
 
     }
-
 
 
     public function checkingChangeFileAu()
@@ -197,6 +235,90 @@ class UpwardsbackupsMain
 
 
 
+
+    private function backupCdn($filename)
+    {
+        global $upwardsbackup;
+
+        $bucketSource = 'utclient-backup';
+        $upwardsbackup->import('S3.php');
+
+        $url = get_option('siteurl');
+        $list_array = array(
+            'http://www.',
+            'https://www.',
+            'http://',
+            'https://',
+            'www.'
+        );
+        $url = str_replace($list_array, '', $url);
+
+        $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+        $config_cdn = $get_UpwardsSave->config_cdn;
+
+        if(substr($url, -1) == '/') {
+            $url = substr($url, 0, -1);
+        }
+        $location = 'plugin/'.$url.'/'.$filename;
+        $location = str_replace(' ', '-', $location);
+        $path = get_option(UTDPATH);
+        $file = $path.$filename;
+
+        if (!file_exists($file) || !is_file($file) || !is_readable($file)) {
+            return false;
+        }
+        else
+        {
+            $s3 = new S3($config_cdn->access_key_id, $config_cdn->secret_access_key);
+            $result = $s3->putObjectFile($file, $bucketSource, $location);
+            var_dump($result);
+            die();
+            return $result;
+        }
+
+    }
+
+
+    private function backupAllDataToCdn()
+    {
+        global $upwardsbackup;
+
+        $bucketSource = 'utclient-backup';
+        $upwardsbackup->import('S3.php');
+
+        $url = get_option('siteurl');
+        $list_array = array(
+            'http://www.',
+            'https://www.',
+            'http://',
+            'https://',
+            'www.'
+        );
+        $url = str_replace($list_array, '', $url);
+
+        $get_UpwardsSave = @json_decode(get_option(UTSAVE));
+        $data_save = $get_UpwardsSave->data_save;
+        $config_cdn = $get_UpwardsSave->config_cdn;
+
+        $s3 = new S3($config_cdn->access_key_id, $config_cdn->secret_access_key);
+
+        if(substr($url, -1) == '/') {
+            $url = substr($url, 0, -1);
+        }
+        $location = 'plugin/'.$url.'/';
+        $location = str_replace(' ', '-', $location);
+        $path = get_option(UTDPATH);
+
+        foreach($data_save as $data)
+        {
+            $file = $path.$data->filename;
+            if (file_exists($file) AND is_file($file) AND is_readable($file))
+            {
+                $s3->putObjectFile($file, $bucketSource, $location);
+            }
+        }
+
+    }
 
 
     /**
@@ -305,27 +427,21 @@ class UpwardsbackupsMain
 
             $get_UpwardsSave->data_save = self::update_save_data($get_save, $file_name, $change_log);
 
-            update_option( UTSAVE, json_encode($get_UpwardsSave) );
+            $phar = new PharData($path.$file_name);
+            foreach($new_files as $file)
+            {
+                $file_location = $file['parent'].DS.$file['name'];
+                $phar->addFile($file['path'], $file_location);
+            }
 
             $config_cdn = $get_UpwardsSave->config_cdn;
-
             if($config_cdn->enable == 1)
             {
-                $upwardsbackup->import('lib.s3.php');
-                $s3 = new TanTanS3($config_cdn->access_key_id, $config_cdn->secret_access_key);
-                if (!($buckets = $s3->listBuckets())) {
-                    $error = $this->getErrorMessage($s3->parsed_xml, $s3->responseCode);
-                }
+                self::backupCdn($file_name);
             }
-            else
-            {
-                $phar = new PharData($path.$file_name);
-                foreach($new_files as $file)
-                {
-                    $file_location = $file['parent'].DS.$file['name'];
-                    $phar->addFile($file['path'], $file_location);
-                }
-            }
+
+
+            update_option( UTSAVE, json_encode($get_UpwardsSave) );
 
             return 1;
         }

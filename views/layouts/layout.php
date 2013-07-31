@@ -37,6 +37,14 @@ $link_cdn = $this->router(array('controller'=>'main', 'function'=>'cdnSetting'))
         <div class="updated" id="message"><p><?php echo $msg; ?></p></div>
     <?php endif; ?>
 
+    <?php
+    if(isset($_REQUEST['error']) OR $error):
+        if($error == null)
+            $error = $_REQUEST['error'];
+    ?>
+        <div class="error fade" id="message"><p><?php echo $error; ?></p></div>
+    <?php endif; ?>
+
     <?php echo $content_for_layout;?>
 
 </div>
