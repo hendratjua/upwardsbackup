@@ -271,8 +271,6 @@ class UpwardsbackupsMain
         {
             $s3 = new S3($config_cdn->access_key_id, $config_cdn->secret_access_key);
             $result = $s3->putObjectFile($file, $bucketSource, $location);
-            var_dump($result);
-            die();
             return $result;
         }
 
